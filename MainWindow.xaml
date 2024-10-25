@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Random_Flashcards"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Initialized="Window_Initialized">
+        Title="" Height="250" Width="550" Initialized="Window_Initialized">
     <Grid>
         <TabControl x:Name="Tab_Control" MouseDoubleClick="TabControl_MouseDoubleClick" Background="#FF141414"/>
 

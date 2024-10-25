@@ -25,7 +25,7 @@ namespace Random_Flashcards
         static string CardListLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "\\Card List.csv";
         static List<List<String>> CardSets = new List<List<String>>();
         static DispatcherTimer dt = new DispatcherTimer();
-        static int dt_counter = 90; 
+        static int dt_counter = 75; 
         static Random random = new Random();
 
         public MainWindow()
@@ -40,23 +40,35 @@ namespace Random_Flashcards
         {
             var a = CardSets[Tab_Control.SelectedIndex];
             var random_index = random.Next(1, a.Count);
-            if (dt_counter % 1 == 0)
+
+            var b = (TextBlock)Tab_Control.SelectedContent;
+            b.Text = a[random_index];
             {
-                //pick random element
+                LinearGradientBrush myBrush = new LinearGradientBrush();
+                var c = (dt_counter % 10);
+                myBrush.GradientStops.Add(new GradientStop(Colors.Red, c / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.OrangeRed, (c + 1) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Orange, (c + 2) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Yellow, (c + 3) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.YellowGreen, (c + 4) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.GreenYellow, (c + 5) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Green, (c + 6) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Blue, (c + 7) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Indigo, (c + 8) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.BlueViolet, (c + 9) / 10));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Violet, (c + 10) / 10));
 
-                var b = (TextBlock)Tab_Control.SelectedContent;
-
-                b.Text = a[random_index];
-                
+                b.Foreground = myBrush;
             }
+            
             if (dt_counter <= 0)
             {
                 dt.Stop();
                 try
                 {
+                    b.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
                     if (CardSets[Tab_Control.SelectedIndex][0].Split(";")[1] == "delete")
                     {
-                        var b = (TextBlock)Tab_Control.SelectedContent;
                         CardSets[Tab_Control.SelectedIndex].RemoveAt(random_index);
                     }
                 }
@@ -90,8 +102,9 @@ namespace Random_Flashcards
                             textBlock.Name = "item";
                             textBlock.HorizontalAlignment = HorizontalAlignment.Center;
                             textBlock.VerticalAlignment = VerticalAlignment.Center;
-                            textBlock.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 50, B = 0});
-                            textBlock.FontSize = 50;
+                            textBlock.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0});
+                            textBlock.FontSize = 24;
+                            textBlock.TextWrapping = TextWrapping.WrapWithOverflow;
 
                             TabItem item = new TabItem();
                             item.Header = category.Split(";")[0];
@@ -131,10 +144,12 @@ namespace Random_Flashcards
 
         private void TabControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            dt_counter = 90;
+            dt_counter = 75;
             if (CardSets[Tab_Control.SelectedIndex].Count > 1)
             {
-                dt.Start();
+                dt.Start(); 
+                System.Media.SoundPlayer player = new System.Media.SoundPlayer(Microsoft.VisualBasic.FileSystem.CurDir() + "\\sound effect.wav");
+                player.Play();
             }
         }
 
