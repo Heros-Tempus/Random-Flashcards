@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <StartupObject>Random_Flashcards.App</StartupObject>
+    <PackageId>Random_Flashcards</PackageId>
   </PropertyGroup>
 
 </Project>

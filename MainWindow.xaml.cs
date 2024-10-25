@@ -12,7 +12,6 @@ using System.Windows.Threading;
 using System.IO;
 using Microsoft.VisualBasic.FileIO;
 using static System.Linq.Enumerable;
-using System.Windows.Threading;
 
 namespace Random_Flashcards
 {
@@ -43,30 +42,12 @@ namespace Random_Flashcards
 
             var b = (TextBlock)Tab_Control.SelectedContent;
             b.Text = a[random_index];
-            {
-                LinearGradientBrush myBrush = new LinearGradientBrush();
-                myBrush.StartPoint = new Point(0, 0);
-                myBrush.EndPoint = new Point(1, 1);
-                var c = (dt_counter % 11);
-                myBrush.GradientStops.Add(new GradientStop(Colors.Red, ((0.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.OrangeRed, ((1.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Orange, ((2.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Yellow, ((3.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.YellowGreen, ((4.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.GreenYellow, ((5.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Green, ((6.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Blue, ((7.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Indigo, ((8.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.BlueViolet, ((9.0 + c) % 11) * (1.0 / 10.0)));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Violet, ((10.0 + c) % 11) * (1.0 / 10.0)));
-                
-                b.Foreground = myBrush;
-            }
+            b.Foreground = Paint_The_Rainbow();
             
             if (dt_counter <= 0)
             {
                 dt.Stop();
-                b.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
+
                 try
                 {
                     if (CardSets[Tab_Control.SelectedIndex][0].Split(";")[1] == "delete")
@@ -150,11 +131,44 @@ namespace Random_Flashcards
             dt_counter = 75;
             if (CardSets[Tab_Control.SelectedIndex].Count > 1)
             {
-                dt.Start(); 
-                System.Media.SoundPlayer player = new System.Media.SoundPlayer(Microsoft.VisualBasic.FileSystem.CurDir() + "\\sound effect.wav");
-                player.Play();
+                dt.Start();
+                try
+                {
+                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(Microsoft.VisualBasic.FileSystem.CurDir() + "\\sound effect.wav");
+                    player.Play();
+                }
+                catch { }
             }
         }
 
+        private LinearGradientBrush Paint_The_Rainbow()
+        {
+                LinearGradientBrush myBrush = new LinearGradientBrush();
+                myBrush.StartPoint = new Point(0, 0);
+                myBrush.EndPoint = new Point(1, 1);
+                var c = (dt_counter % 11);
+                myBrush.GradientStops.Add(new GradientStop(Colors.Red, ((0.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.OrangeRed, ((1.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Orange, ((2.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Yellow, ((3.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.YellowGreen, ((4.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.GreenYellow, ((5.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Green, ((6.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Blue, ((7.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Indigo, ((8.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.BlueViolet, ((9.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Violet, ((10.0 + c) % 11) * (1.0 / 10.0)));
+                return myBrush;
+        }
+
+        private void Tab_Control_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var a = (TextBlock)Tab_Control.SelectedContent;
+            if (a != null) 
+            {
+                a.Text = CardSets[Tab_Control.SelectedIndex][0].Split(";")[0];
+                a.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
+            }
+        }
     }
 }
