@@ -45,28 +45,30 @@ namespace Random_Flashcards
             b.Text = a[random_index];
             {
                 LinearGradientBrush myBrush = new LinearGradientBrush();
-                var c = (dt_counter % 10);
-                myBrush.GradientStops.Add(new GradientStop(Colors.Red, c / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.OrangeRed, (c + 1) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Orange, (c + 2) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Yellow, (c + 3) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.YellowGreen, (c + 4) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.GreenYellow, (c + 5) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Green, (c + 6) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Blue, (c + 7) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Indigo, (c + 8) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.BlueViolet, (c + 9) / 10));
-                myBrush.GradientStops.Add(new GradientStop(Colors.Violet, (c + 10) / 10));
-
+                myBrush.StartPoint = new Point(0, 0);
+                myBrush.EndPoint = new Point(1, 1);
+                var c = (dt_counter % 11);
+                myBrush.GradientStops.Add(new GradientStop(Colors.Red, ((0.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.OrangeRed, ((1.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Orange, ((2.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Yellow, ((3.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.YellowGreen, ((4.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.GreenYellow, ((5.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Green, ((6.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Blue, ((7.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Indigo, ((8.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.BlueViolet, ((9.0 + c) % 11) * (1.0 / 10.0)));
+                myBrush.GradientStops.Add(new GradientStop(Colors.Violet, ((10.0 + c) % 11) * (1.0 / 10.0)));
+                
                 b.Foreground = myBrush;
             }
             
             if (dt_counter <= 0)
             {
                 dt.Stop();
+                b.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
                 try
                 {
-                    b.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
                     if (CardSets[Tab_Control.SelectedIndex][0].Split(";")[1] == "delete")
                     {
                         CardSets[Tab_Control.SelectedIndex].RemoveAt(random_index);
@@ -74,7 +76,8 @@ namespace Random_Flashcards
                 }
                 catch
                 {
-
+                    //nothing needs to be done in this block
+                    //it's just here to keep the program from craching if the selected category can't be split on a ';'
                 }
             }
             dt_counter--;
