@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800" Initialized="Window_Initialized">
     <Grid>
-        
+        <TabControl x:Name="Tab_Control" MouseDoubleClick="TabControl_MouseDoubleClick" Background="#FF141414"/>
+
     </Grid>
 </Window>
