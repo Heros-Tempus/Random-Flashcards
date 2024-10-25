@@ -22,10 +22,11 @@ namespace Random_Flashcards
     public partial class MainWindow : Window
     {
         static Random rnd = new Random();
-        string CardListLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "\\Card List.csv";
+        static string CardListLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "\\Card List.csv";
         static List<List<String>> CardSets = new List<List<String>>();
         static DispatcherTimer dt = new DispatcherTimer();
-        static int dt_counter = 90;
+        static int dt_counter = 90; 
+        static Random random = new Random();
 
         public MainWindow()
         {
@@ -37,13 +38,32 @@ namespace Random_Flashcards
 
         private void DT_Tick(object? sender, EventArgs e)
         {
-            if (dt_counter % 3 == 0) 
+            var a = CardSets[Tab_Control.SelectedIndex];
+            var random_index = random.Next(1, a.Count);
+            if (dt_counter % 1 == 0)
             {
                 //pick random element
+
+                var b = (TextBlock)Tab_Control.SelectedContent;
+
+                b.Text = a[random_index];
+                
             }
             if (dt_counter <= 0)
             {
                 dt.Stop();
+                try
+                {
+                    if (CardSets[Tab_Control.SelectedIndex][0].Split(";")[1] == "delete")
+                    {
+                        var b = (TextBlock)Tab_Control.SelectedContent;
+                        CardSets[Tab_Control.SelectedIndex].RemoveAt(random_index);
+                    }
+                }
+                catch
+                {
+
+                }
             }
             dt_counter--;
         }
@@ -66,15 +86,15 @@ namespace Random_Flashcards
 
                             //todo: create tab control for the category
                             TextBlock textBlock = new TextBlock();
-                            textBlock.Text = "fff" + category;
+                            textBlock.Text = category.Split(";")[0];
                             textBlock.Name = "item";
                             textBlock.HorizontalAlignment = HorizontalAlignment.Center;
                             textBlock.VerticalAlignment = VerticalAlignment.Center;
-                            textBlock.Foreground = new SolidColorBrush(new Color() { A = 255, R = 100, G = 50, B = 0});
+                            textBlock.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 50, B = 0});
                             textBlock.FontSize = 50;
 
                             TabItem item = new TabItem();
-                            item.Header = category;
+                            item.Header = category.Split(";")[0];
                             item.Content = textBlock;
 
                             Tab_Control.Items.Add(item);
@@ -111,8 +131,11 @@ namespace Random_Flashcards
 
         private void TabControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            dt_counter = 100;
-            dt.Start();
+            dt_counter = 90;
+            if (CardSets[Tab_Control.SelectedIndex].Count > 1)
+            {
+                dt.Start();
+            }
         }
 
     }
