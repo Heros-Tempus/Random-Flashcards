@@ -125,12 +125,14 @@ namespace Random_Flashcards
                     else
                     {
                         //yell at user for making an empty csv
+                        MessageBox.Show("The CSV file is empty. Please add some data to the file and restart the program.");
                     }
                 }
             }
             else
             {
                 //yell at user for deleting the file
+                MessageBox.Show("The CSV file is missing. Please add the file and restart the program.");
             }
             if (File.Exists(SettingsLocation)) 
             {
