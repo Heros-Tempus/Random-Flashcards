@@ -22,6 +22,7 @@ namespace Random_Flashcards
     {
         static Random rnd = new Random();
         static string CardListLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "\\Card List.csv";
+        static string SettingsLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "\\Settings.txt";
         static List<List<String>> CardSets = new List<List<String>>();
         static DispatcherTimer dt = new DispatcherTimer();
         static int dt_counter = 75; 
@@ -33,6 +34,12 @@ namespace Random_Flashcards
 
             dt.Tick += new EventHandler(DT_Tick);
             dt.Interval = TimeSpan.FromMilliseconds(33); //one tick per frame at a rate of 30fps
+
+        }
+
+        private void Tab_Control_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void DT_Tick(object? sender, EventArgs e)
@@ -47,6 +54,7 @@ namespace Random_Flashcards
             if (dt_counter <= 0)
             {
                 dt.Stop();
+                Tab_Control.IsEnabled = true;
 
                 try
                 {
@@ -80,9 +88,9 @@ namespace Random_Flashcards
                         {
                             CardSets.Add(new List<String> { category });
 
-                            //todo: create tab control for the category
                             TextBlock textBlock = new TextBlock();
                             textBlock.Text = category.Split(";")[0];
+                            textBlock.Text = CardListLocation;
                             textBlock.Name = "item";
                             textBlock.HorizontalAlignment = HorizontalAlignment.Center;
                             textBlock.VerticalAlignment = VerticalAlignment.Center;
@@ -93,6 +101,7 @@ namespace Random_Flashcards
                             TabItem item = new TabItem();
                             item.Header = category.Split(";")[0];
                             item.Content = textBlock;
+                            
 
                             Tab_Control.Items.Add(item);
                             
@@ -123,11 +132,41 @@ namespace Random_Flashcards
             {
                 //yell at user for deleting the file
             }
+            if (File.Exists(SettingsLocation)) 
+            {
+                var settings = File.ReadAllLines(SettingsLocation);
+                foreach (var line in settings)
+                {
+                    try
+                    {
+                        var x = line;
+                        switch (x.Split(";")[0])
+                        {
+                            case "Font_Size":
+                                break;
+                            case "Font_Color":
+                                break;
+                            case "Font_Gradient":
+                                break;
+                            case "Sound_Effects":
+                                break;
+                            case "Background_Color":
+                                break;
+                            case "Background_Image":
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    catch { }
+                }
+            }
 
         }
 
         private void TabControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            Tab_Control.IsEnabled = false;
             dt_counter = 75;
             if (CardSets[Tab_Control.SelectedIndex].Count > 1)
             {
@@ -164,11 +203,11 @@ namespace Random_Flashcards
         private void Tab_Control_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var a = (TextBlock)Tab_Control.SelectedContent;
-            if (a != null) 
+            if (a != null)
             {
                 a.Text = CardSets[Tab_Control.SelectedIndex][0].Split(";")[0];
                 a.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
-            }
+            } 
         }
     }
 }
