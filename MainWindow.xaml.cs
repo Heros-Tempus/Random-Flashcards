@@ -12,6 +12,8 @@ using System.Windows.Threading;
 using System.IO;
 using Microsoft.VisualBasic.FileIO;
 using static System.Linq.Enumerable;
+using NHotkey.Wpf;
+using NHotkey;
 
 namespace Random_Flashcards
 {
@@ -74,6 +76,13 @@ namespace Random_Flashcards
 
         private void Window_Initialized(object sender, EventArgs e)
         {
+            Load_Card_List(sender, e);
+            Load_Settings(sender, e);
+            Set_Hotkeys(sender, e);
+        }
+        private void Load_Card_List(object sender, EventArgs e)
+        {
+
             if (File.Exists(CardListLocation))
             {
                 using (TextFieldParser parser = new TextFieldParser(CardListLocation))
@@ -84,7 +93,7 @@ namespace Random_Flashcards
                     string[]? header = parser.ReadFields();
                     if (header != null && header.Length > 0)
                     {
-                        foreach(string category in header)
+                        foreach (string category in header)
                         {
                             CardSets.Add(new List<String> { category });
 
@@ -94,17 +103,17 @@ namespace Random_Flashcards
                             textBlock.Name = "item";
                             textBlock.HorizontalAlignment = HorizontalAlignment.Center;
                             textBlock.VerticalAlignment = VerticalAlignment.Center;
-                            textBlock.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0});
+                            textBlock.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
                             textBlock.FontSize = 24;
                             textBlock.TextWrapping = TextWrapping.WrapWithOverflow;
 
                             TabItem item = new TabItem();
                             item.Header = category.Split(";")[0];
                             item.Content = textBlock;
-                            
+
 
                             Tab_Control.Items.Add(item);
-                            
+
                         }
                         while (!parser.EndOfData)
                         {
@@ -134,7 +143,10 @@ namespace Random_Flashcards
                 //yell at user for deleting the file
                 MessageBox.Show("The CSV file is missing. Please add the file and restart the program.");
             }
-            if (File.Exists(SettingsLocation)) 
+        }
+        private void Load_Settings(object sender, EventArgs e)
+        {
+            if (File.Exists(SettingsLocation))
             {
                 var settings = File.ReadAllLines(SettingsLocation);
                 foreach (var line in settings)
@@ -163,10 +175,31 @@ namespace Random_Flashcards
                     catch { }
                 }
             }
-
         }
-
-        private void TabControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void Set_Hotkeys(object sender, EventArgs e)
+        {
+            HotkeyManager.Current.AddOrReplace("Increment", Key.Add, ModifierKeys.Control | ModifierKeys.Alt, OnIncrement);
+            HotkeyManager.Current.AddOrReplace("Decrement", Key.Subtract, ModifierKeys.Control | ModifierKeys.Alt, OnDecrement);
+            HotkeyManager.Current.AddOrReplace("Roll", Key.Space, ModifierKeys.Control | ModifierKeys.Alt, OnRoll);
+        }
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            HotkeyManager.Current.Remove("Increment");
+            HotkeyManager.Current.Remove("Decrement");
+            HotkeyManager.Current.Remove("Roll");
+        }
+        private void OnIncrement(object sender, HotkeyEventArgs e)
+        {
+            Tab_Control.SelectedIndex++;
+            e.Handled = true;
+        }
+        private void OnDecrement(object sender, HotkeyEventArgs e)
+        {
+            if (Tab_Control.SelectedIndex > 0)
+                Tab_Control.SelectedIndex--;
+            e.Handled = true;
+        }
+        private void OnRoll(object sender, HotkeyEventArgs e)
         {
             Tab_Control.IsEnabled = false;
             dt_counter = 75;
@@ -180,6 +213,12 @@ namespace Random_Flashcards
                 }
                 catch { }
             }
+            if (e != null)
+                e.Handled = true;
+        }
+        private void TabControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            OnRoll(sender, null);
         }
 
         private LinearGradientBrush Paint_The_Rainbow()
