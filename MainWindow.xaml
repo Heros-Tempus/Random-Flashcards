@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Random_Flashcards"
         mc:Ignorable="d"
-        Title="" Height="250" Width="550" Initialized="Window_Initialized">
+    Title="" Height="250" Width="550" Initialized="Window_Initialized">
     <Grid>
-        <TabControl x:Name="Tab_Control" MouseDoubleClick="TabControl_MouseDoubleClick" Background="#FF0F0F0F" SelectionChanged="Tab_Control_SelectionChanged" />
+        <TabControl x:Name="Tab_Control" MouseDoubleClick="TabControl_MouseDoubleClick" Background="#FF0F0F0F" SelectionChanged="Tab_Control_SelectionChanged" >
 
+        </TabControl>
     </Grid>
 </Window>

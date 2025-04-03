@@ -178,7 +178,6 @@ namespace Random_Flashcards
             bool Reload_On_Tab_Change = false;
 
             //Load the settings
-            {
                 if (File.Exists(SettingsLocation))
                 {
                     var settings = File.ReadAllLines(SettingsLocation);
@@ -202,7 +201,7 @@ namespace Random_Flashcards
                                     int y = 0;
                                     if (int.TryParse(x.Split(";")[1], out y))
                                     {
-                                        FontSize = y;
+                                        Font_Size = y;
                                     }
                                     break;
                                 case "Bold":
@@ -274,7 +273,7 @@ namespace Random_Flashcards
                         catch { }
                     }
                 }
-            }
+            
 
             //Building the CSV from the text files has to be done before loading the card list
             if (Build_CSV_From_TXTs)
@@ -299,7 +298,6 @@ namespace Random_Flashcards
 
                                 TextBlock textBlock = new TextBlock();
                                 textBlock.Text = category.Split(";")[0];
-                                textBlock.Text = CardListLocation;
                                 textBlock.Name = "item";
                                 textBlock.HorizontalAlignment = HorizontalAlignment.Center;
                                 textBlock.VerticalAlignment = VerticalAlignment.Center;
@@ -354,7 +352,7 @@ namespace Random_Flashcards
                 }
                 if (Font_Size != null)
                 {
-                    ((TextBlock)tab.Content).FontSize = (int)Font_Size;
+                    ((TextBlock)tab.Content).FontSize = (double)Font_Size;
                 }
                 if (Bold)
                 {
@@ -398,6 +396,7 @@ namespace Random_Flashcards
                 }
             }
 
+            //Setting up the backup has to be done after loading the card list, but doesn't need to be a part of the loop
             if (Reload_On_Tab_Change)
             {
                 BackupCards = CardSets.Select(innerList => innerList.ToList()).ToList();
