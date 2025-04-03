@@ -25,7 +25,7 @@ namespace Random_Flashcards
     {
 
         static Random rnd = new Random();
-        static string CardListLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "Card List.csv";
+        static string CardListLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "\\Card List.csv";
         static string SettingsLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "\\Settings.txt";
         static string SoundLocation = Microsoft.VisualBasic.FileSystem.CurDir() + "\\Sound.wav";
         static List<List<String>> CardSets = new List<List<String>>();
@@ -167,6 +167,16 @@ namespace Random_Flashcards
                 keyboard.Add("up", Key.Up);
             }
 
+            bool Build_CSV_From_TXTs = false;
+            string ?Font = null;
+            int ?Font_Size = null;
+            bool Bold = false;
+            bool Italic = false;
+            bool Underline = false;
+            string ?Background_Color = null;
+            string ?Background_Image = null;
+            bool Reload_On_Tab_Change = false;
+
             //Load the settings
             {
                 if (File.Exists(SettingsLocation))
@@ -179,58 +189,53 @@ namespace Random_Flashcards
                             var x = line;
                             switch (x.Split(";")[0])
                             {
-                                case "Font":
-                                    foreach (TabItem item in Tab_Control.Items)
+                                case "Build_CSV_From_TXTs":
+                                    if (x.Split(";")[1].ToLower() == "true")
                                     {
-                                        ((TextBlock)item.Content).FontFamily = new FontFamily(x.Split(";")[1]);
+                                        Build_CSV_From_TXTs = true;
                                     }
+                                    break;
+                                case "Font":
+                                     Font = x.Split(";")[1];
                                     break;
                                 case "Font_Size":
                                     int y = 0;
                                     if (int.TryParse(x.Split(";")[1], out y))
                                     {
-                                        foreach (TabItem item in Tab_Control.Items)
-                                        {
-                                            ((TextBlock)item.Content).FontSize = y;
-                                        }
+                                        FontSize = y;
                                     }
                                     break;
                                 case "Bold":
-                                    foreach (TabItem item in Tab_Control.Items)
+                                    if (x.Split(';')[1].ToLower() == "true")
                                     {
-                                        ((TextBlock)item.Content).FontWeight = x.Split(";")[1].ToLower() == "true" ? FontWeights.Bold : FontWeights.Normal;
+                                            Bold = true;
                                     }
+
                                     break;
                                 case "Italic":
-                                    foreach (TabItem item in Tab_Control.Items)
+                                    if (x.Split(';')[1].ToLower() == "true")
                                     {
-                                        ((TextBlock)item.Content).FontStyle = x.Split(";")[1].ToLower() == "true" ? FontStyles.Italic : FontStyles.Normal;
+                                        Italic = true;
                                     }
                                     break;
                                 case "Underline":
-                                    foreach (TabItem item in Tab_Control.Items)
+                                    if (x.Split(';')[1].ToLower() == "true")
                                     {
-                                        ((TextBlock)item.Content).TextDecorations = x.Split(";")[1].ToLower() == "true" ? TextDecorations.Underline : null;
+                                        Underline = true;
                                     }
                                     break;
                                 case "Sound_Effects":
                                     SoundLocation = x.Split(";")[1];
                                     break;
                                 case "Background_Color":
-                                    foreach (TabItem item in Tab_Control.Items)
-                                    {
-                                        ((TextBlock)item.Content).Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(x.Split(";")[1]));
-                                        Tab_Control.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(x.Split(";")[1]));
-                                    }
+                                    Background_Color = x.Split(";")[1];
                                     break;
                                 case "Background_Image":
-                                    foreach (TabItem item in Tab_Control.Items)
-                                    {
-                                        ((TextBlock)item.Content).Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00000000"));
-                                        Tab_Control.Background = new ImageBrush(new BitmapImage(new Uri(x.Split(";")[1])));
-                                    }
+                                    Background_Image = x.Split(";")[1];
                                     break;
                                 case "Hotkeys":
+                                    //Hotkeys are set up in the format [action name]:[optional modkeys]&[key]
+                                    //Example: TabLeft:ctrl&alt&-,TabRight:ctrl&alt&+,Roll:f4
                                     foreach (var k in x.Split(";")[1].Split(","))
                                     {
                                         if (k != "None")
@@ -259,13 +264,7 @@ namespace Random_Flashcards
                                 case "Reload_On_Tab_Change":
                                     if (x.Split(";")[1].ToLower() == "true")
                                     {
-                                        BackupCards = CardSets.Select(innerList => innerList.ToList()).ToList();
-                                    }
-                                    break;
-                                case "Build_CSV_From_TXTs":
-                                    if (x.Split(";")[1].ToLower() == "true")
-                                    {
-                                        CombineTxtFilesToCsv(Microsoft.VisualBasic.FileSystem.CurDir() + "\\Lists", CardListLocation);
+                                        Reload_On_Tab_Change = true;
                                     }
                                     break;
                                 default:
@@ -275,6 +274,12 @@ namespace Random_Flashcards
                         catch { }
                     }
                 }
+            }
+
+            //Building the CSV from the text files has to be done before loading the card list
+            if (Build_CSV_From_TXTs)
+            {
+                CombineTxtFilesToCsv(Microsoft.VisualBasic.FileSystem.CurDir() + "\\Lists", CardListLocation);
             }
             //Load the card list
             {
@@ -338,6 +343,64 @@ namespace Random_Flashcards
                     //yell at user for deleting the file
                     MessageBox.Show("The CSV file is missing. Please add the file and restart the program.");
                 }
+            }
+
+            //The remaining settings have to be applied after loading the card list
+            foreach (TabItem tab in Tab_Control.Items)
+            {
+                if (Font != null)
+                {
+                    ((TextBlock)tab.Content).FontFamily = new FontFamily(Font);
+                }
+                if (Font_Size != null)
+                {
+                    ((TextBlock)tab.Content).FontSize = (int)Font_Size;
+                }
+                if (Bold)
+                {
+                    ((TextBlock)tab.Content).FontWeight = FontWeights.Bold;
+                }
+                if (Italic)
+                {
+                    ((TextBlock)tab.Content).FontStyle = FontStyles.Italic;
+                }
+                if (Underline)
+                {
+                    ((TextBlock)tab.Content).TextDecorations = TextDecorations.Underline;
+                }
+                if (Background_Color != null)
+                {
+                    try
+                    {
+                        var color = (Color)ColorConverter.ConvertFromString(Background_Color);
+                        ((TextBlock)tab.Content).Background = new SolidColorBrush(color);
+                        Tab_Control.Background = new SolidColorBrush(color);
+                    }
+                    catch
+                    {
+                        //If the color is invalid, set the background to transparent
+                        ((TextBlock)tab.Content).Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0, 0, 0, 0));
+                    }
+                }
+                if (Background_Image != null)
+                {
+                    try
+                    {
+                        var image = new BitmapImage(new Uri(Background_Image));
+                        ((TextBlock)tab.Content).Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00000000"));
+                        Tab_Control.Background = new ImageBrush(image);
+                    }
+                    catch
+                    {
+                        //If the image is invalid, set the background to transparent
+                        ((TextBlock)tab.Content).Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0, 0, 0, 0));
+                    }
+                }
+            }
+
+            if (Reload_On_Tab_Change)
+            {
+                BackupCards = CardSets.Select(innerList => innerList.ToList()).ToList();
             }
 
         }
