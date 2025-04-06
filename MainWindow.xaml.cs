@@ -31,15 +31,21 @@ namespace Random_Flashcards
         static List<List<String>> CardSets = new List<List<String>>();
         static List<List<String>> BackupCards = new List<List<String>>();
         static DispatcherTimer dt = new DispatcherTimer();
-        static int dt_counter = 75; 
+        static int requiredTicks = 75;
+        static int dt_counter = 75;
         static Random random = new Random();
+        static int fps = 30;
+        string del = "\x1F";
+        bool Confirm_Delete = false;
+        bool Rainbow_Animation = true;
+        Color? Font_Color = null;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            dt.Tick += new EventHandler(DT_Tick);
-            dt.Interval = TimeSpan.FromMilliseconds(33); //one tick per frame at a rate of 30fps
+            dt.Tick += new EventHandler(DT_Tick); 
+            dt.Interval = TimeSpan.FromMilliseconds(fps > 0 ? 1000.0 / fps : 1000.0 / 30);
 
         }
         private void DT_Tick(object? sender, EventArgs e)
@@ -49,10 +55,15 @@ namespace Random_Flashcards
 
             var b = (TextBlock)Tab_Control.SelectedContent;
             b.Text = a[random_index];
-            b.Foreground = Paint_The_Rainbow();
+            if (Rainbow_Animation)
+                b.Foreground = Paint_The_Rainbow();
 
             if (dt_counter <= 0)
             {
+                if (Font_Color != null)
+                {
+                    b.Foreground = new SolidColorBrush((Color)Font_Color);
+                }
                 dt.Stop();
                 Tab_Control.IsEnabled = true;
                 if (CardSets[Tab_Control.SelectedIndex].Count > 2)
@@ -175,9 +186,9 @@ namespace Random_Flashcards
             bool Underline = false;
             string ?Background_Color = null;
             string ?Background_Image = null;
-            bool Reload_On_Tab_Change = false;
 
             //Load the settings
+            {
                 if (File.Exists(SettingsLocation))
                 {
                     var settings = File.ReadAllLines(SettingsLocation);
@@ -195,7 +206,10 @@ namespace Random_Flashcards
                                     }
                                     break;
                                 case "Font":
-                                     Font = x.Split(";")[1];
+                                    Font = x.Split(";")[1];
+                                    break;
+                                case "Font_Color":
+                                    Font_Color = (Color)ColorConverter.ConvertFromString(x.Split(";")[1]);
                                     break;
                                 case "Font_Size":
                                     int y = 0;
@@ -207,7 +221,7 @@ namespace Random_Flashcards
                                 case "Bold":
                                     if (x.Split(';')[1].ToLower() == "true")
                                     {
-                                            Bold = true;
+                                        Bold = true;
                                     }
 
                                     break;
@@ -260,10 +274,24 @@ namespace Random_Flashcards
                                         }
                                     }
                                     break;
-                                case "Reload_On_Tab_Change":
+                                case "Confirm_Delete":
                                     if (x.Split(";")[1].ToLower() == "true")
                                     {
-                                        Reload_On_Tab_Change = true;
+                                        Confirm_Delete = true;
+                                    }
+                                    break;
+                                case "FPS":
+                                    int fps_temp = 0;
+                                    if (int.TryParse(x.Split(";")[1], out fps_temp))
+                                    {
+                                        fps = fps_temp;
+                                    }
+                                    break;
+                                case "Animation_Time":
+                                    double z = 0;
+                                    if (double.TryParse(x.Split(";")[1], out z))
+                                    {
+                                        requiredTicks = (int)Math.Round((z >= 0 ? z : 1.0) * fps);
                                     }
                                     break;
                                 default:
@@ -273,7 +301,7 @@ namespace Random_Flashcards
                         catch { }
                     }
                 }
-            
+            }
 
             //Building the CSV from the text files has to be done before loading the card list
             if (Build_CSV_From_TXTs)
@@ -287,7 +315,7 @@ namespace Random_Flashcards
                     using (TextFieldParser parser = new TextFieldParser(CardListLocation))
                     {
                         parser.TextFieldType = FieldType.Delimited;
-                        parser.SetDelimiters(",");
+                        parser.SetDelimiters(del);
 
                         string[]? header = parser.ReadFields();
                         if (header != null && header.Length > 0)
@@ -301,7 +329,10 @@ namespace Random_Flashcards
                                 textBlock.Name = "item";
                                 textBlock.HorizontalAlignment = HorizontalAlignment.Center;
                                 textBlock.VerticalAlignment = VerticalAlignment.Center;
-                                textBlock.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
+                                if (Font_Color != null)
+                                    textBlock.Foreground = new SolidColorBrush((Color)Font_Color);
+                                else
+                                    textBlock.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
                                 textBlock.FontSize = 24;
                                 textBlock.TextWrapping = TextWrapping.WrapWithOverflow;
 
@@ -350,6 +381,10 @@ namespace Random_Flashcards
                 {
                     ((TextBlock)tab.Content).FontFamily = new FontFamily(Font);
                 }
+                if (Font_Color != null)
+                {
+                    ((TextBlock)tab.Content).Foreground = new SolidColorBrush((Color)Font_Color);
+                }
                 if (Font_Size != null)
                 {
                     ((TextBlock)tab.Content).FontSize = (double)Font_Size;
@@ -397,18 +432,47 @@ namespace Random_Flashcards
             }
 
             //Setting up the backup has to be done after loading the card list, but doesn't need to be a part of the loop
-            if (Reload_On_Tab_Change)
+            if (!Confirm_Delete)
             {
                 BackupCards = CardSets.Select(innerList => innerList.ToList()).ToList();
             }
-
         }
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             HotkeyManager.Current.Remove("Increment");
             HotkeyManager.Current.Remove("Decrement");
             HotkeyManager.Current.Remove("Roll");
-            
+
+            if (Confirm_Delete)
+            {
+                SaveCardSet();
+            }
+            base.OnClosing(e);
+        }
+        private void SaveCardSet()
+        {
+            foreach (var innerList in CardSets)
+            {
+                // Ensure there is at least one element for the filename.
+                if (innerList != null && innerList.Count > 0)
+                {
+                    // Use the first element as the file name (appending .txt).
+                    string fileName = innerList[0] + ".txt";
+
+                    // Get the remaining elements as the lines to write.
+                    var lines = innerList.Skip(1).ToArray();
+
+                    try
+                    {
+                        File.WriteAllLines(Microsoft.VisualBasic.FileSystem.CurDir() + "\\Lists" + fileName, lines);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle any exceptions (e.g., logging the error).
+                        Console.WriteLine($"Error writing file {fileName}: {ex.Message}");
+                    }
+                }
+            }
         }
         private void OnIncrement(object ?sender, HotkeyEventArgs ?e)
         {
@@ -428,7 +492,7 @@ namespace Random_Flashcards
             if (CardSets[Tab_Control.SelectedIndex].Count > 1)
             {
                 Tab_Control.IsEnabled = false;
-                dt_counter = 75;
+                dt_counter = requiredTicks;
                 dt.Start();
                 try
                 {
@@ -473,7 +537,10 @@ namespace Random_Flashcards
             if (a != null)
             {
                 a.Text = CardSets[Tab_Control.SelectedIndex][0].Split(";")[0];
-                a.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
+                if (Font_Color != null)
+                    a.Foreground = new SolidColorBrush((Color)Font_Color);
+                else
+                    a.Foreground = new SolidColorBrush(new Color() { A = 255, R = 0, G = 0, B = 0 });
             } 
         }
         private void CombineTxtFilesToCsv(string inputFolder, string outputCsvFile)
@@ -493,7 +560,7 @@ namespace Random_Flashcards
 
             StringBuilder csvContent = new StringBuilder();
 
-            csvContent.AppendLine(string.Join(",", fileData.Keys));
+            csvContent.AppendLine(string.Join(del, fileData.Keys));
 
             for (int i = 0; i < maxLines; i++)
             {
@@ -512,9 +579,8 @@ namespace Random_Flashcards
                     }
                 }
 
-                csvContent.AppendLine(string.Join(",", rowItems));
+                csvContent.AppendLine(string.Join(del, rowItems));
             }
-
             File.WriteAllText(outputCsvFile, csvContent.ToString());
         }
 
