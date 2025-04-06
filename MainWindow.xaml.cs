@@ -540,7 +540,7 @@ namespace Random_Flashcards
                 if (Font_Color != null)
                     a.Foreground = new SolidColorBrush((Color)Font_Color);
                 else
-                    a.Foreground = new SolidColorBrush(new Color() { A = 255, R = 0, G = 0, B = 0 });
+                    a.Foreground = new SolidColorBrush(new Color() { A = 255, R = 255, G = 0, B = 0 });
             } 
         }
         private void CombineTxtFilesToCsv(string inputFolder, string outputCsvFile)
